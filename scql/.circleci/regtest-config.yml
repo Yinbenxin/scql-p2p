@@ -1,0 +1,110 @@
+# Copyright 2023 Ant Group Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+parameters:
+  enable_regtest:
+    type: boolean
+    default: false
+  run_regtest:
+    type: boolean
+    default: false
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  linux_regtest:
+    machine:
+      image: ubuntu-2004:2022.07.1
+    parameters:
+      resource_class:
+        type: string
+    resource_class: << parameters.resource_class >>
+    steps:
+      - checkout
+      - run:
+          name: "Checkout devtools"
+          command: git clone https://github.com/secretflow/devtools.git ../devtools
+      - run:
+          name: Setup BuildBuddy Cache
+          command: ../devtools/bazel_cache_setup.py
+      - run:
+          name: "Build binary"
+          command: |
+            set +e
+            mkdir -p image
+            cp docker/scql-ubuntu.Dockerfile image
+            docker run -d -it --name scql-dev -v $(pwd):/home/admin/dev/ -w /home/admin/dev --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --cap-add=NET_ADMIN --privileged=true --entrypoint=bash secretflow/scql-ci:latest
+            docker exec -it scql-dev bash -c "make && bazelisk build //engine/exe:scqlengine -c opt --ui_event_filters=-info,-debug,-warning"
+
+            MACHINE_TYPE=`arch`
+            if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+              mkdir -p image/linux/amd64
+              docker cp scql-dev:/home/admin/dev/bazel-bin/engine/exe/scqlengine image/linux/amd64
+              docker cp scql-dev:/home/admin/dev/bin/scdbserver image/linux/amd64
+              docker cp scql-dev:/home/admin/dev/bin/scdbclient image/linux/amd64
+              docker cp scql-dev:/home/admin/dev/bin/broker image/linux/amd64
+              docker cp scql-dev:/home/admin/dev/bin/brokerctl image/linux/amd64
+            else
+              mkdir -p image/linux/arm64
+              docker cp scql-dev:/home/admin/dev/bazel-bin/engine/exe/scqlengine image/linux/arm64
+              docker cp scql-dev:/home/admin/dev/bin/scdbserver image/linux/arm64
+              docker cp scql-dev:/home/admin/dev/bin/scdbclient image/linux/arm64
+              docker cp scql-dev:/home/admin/dev/bin/broker image/linux/arm64
+              docker cp scql-dev:/home/admin/dev/bin/brokerctl image/linux/arm64
+            fi
+            docker stop scql-dev &&  docker rm scql-dev
+      - run:
+          name: "Build image"
+          command: |
+            cd image
+            MACHINE_TYPE=`arch`
+            if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+              docker buildx build --platform linux/amd64 -f scql-ubuntu.Dockerfile -t scql:latest .
+            else
+              docker buildx build --platform linux/arm64 -f scql-ubuntu.Dockerfile -t scql:latest .
+            fi
+      - run:
+          name: "Deploy image"
+          command: |
+            set +e
+            cd .ci/docker-compose
+            python3 -m pip install -r requirements.txt
+            python3 setup.py
+            docker compose -p regtest up -d
+            docker ps | grep regtest
+      - run:
+          name: "Run regtest"
+          command: |
+            set +e
+            sudo snap install go --channel=1.21/stable --classic
+            sleep 1m
+            export SKIP_CONCURRENT_TEST=true
+            export $(grep -v '^#' .ci/docker-compose/.env | xargs)
+            # env $snap_bin_path is empty, use hardcoded go path
+            /snap/bin/go test ./cmd/regtest/... -v -count=1 -timeout=30m -args --conf=../../../.ci/docker-compose/regtest.yml
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  regtest:
+    when: << pipeline.parameters.run_regtest >>
+    jobs:
+      - linux_regtest:
+          matrix:
+            parameters:
+              resource_class: ["2xlarge", "arm-xlarge"]

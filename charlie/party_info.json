@@ -1,0 +1,19 @@
+{
+  "participants": [
+    {
+      "party_code": "alice",
+      "endpoint": "http://192.168.77.18:8181",
+      "pubkey": "MCowBQYDK2VwAyEAVhUJVNOChKu01SU1eTIlrWd0pBmm6WmZhuxySPJ+u7E="
+    },
+    {
+      "party_code": "bob",
+      "endpoint": "http://192.168.77.18:8281",
+      "pubkey": "MCowBQYDK2VwAyEA8ltuEnvM3aZ/ANp8GwNallw+PIqE0C4wI70ZyRugF0Q="
+    },
+    {
+      "party_code": "charlie",
+      "endpoint": "http://192.168.77.18:8381",
+      "pubkey": "MCowBQYDK2VwAyEABbP9clrmD7GGssXJxat1PsLE3x9e+5VWKctogeOfhjk="
+    }
+  ]
+}
