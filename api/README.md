@@ -25,7 +25,6 @@
 
 ## POST /run
 - 请求命令:
-  - 方式一（原始 SQL 放在请求体 `text/plain`）:
     - `curl -sS -X POST 'http://localhost:8111/run' -H 'Content-Type: text/plain' --data $'SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tc.order_amounts) as avg_amount FROM ta INNER JOIN tc ON ta.ID = tc.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tc.is_actives=1 GROUP BY ta.credit_rank;'`
 
 - 示例返回:
