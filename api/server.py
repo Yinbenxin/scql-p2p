@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import re
+import base64
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -41,9 +42,23 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path.startswith('/get/ccl'):
             self.handle_get_ccl()
         elif parsed.path.startswith('/run'):
-            self.handle_run(parsed)
+            self.send_response(405)
+            self.send_header('Allow', 'POST')
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(b'Method Not Allowed: use POST /run')
         elif parsed.path.startswith('/logs'):
             self.handle_logs()
+        else:
+            self.send_response(404)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(b'Not Found')
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path.startswith('/run'):
+            self.handle_run_post()
         else:
             self.send_response(404)
             self.send_header('Content-Type', 'text/plain; charset=utf-8')
@@ -90,7 +105,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(f'Exception: {e}'.encode('utf-8'))
 
-    def handle_run(self, parsed):
+    def handle_run_get(self, parsed):
         qs = parse_qs(parsed.query)
         txt_list = qs.get('txt')
         if not txt_list or not txt_list[0].strip():
@@ -100,6 +115,40 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b'Missing query param: txt')
             return
         sql = txt_list[0]
+        self._run_sql(sql)
+
+    def handle_run_post(self):
+        # 支持两种POST：
+        # 1) text/plain 原始 SQL 在请求体
+        # 2) application/x-www-form-urlencoded，键为 txt 或 txt64
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length) if content_length > 0 else b''
+        ctype = self.headers.get('Content-Type', '')
+        sql = None
+        if 'application/x-www-form-urlencoded' in ctype:
+            try:
+                form = parse_qs(body.decode('utf-8'))
+                if 'txt' in form and form['txt'][0].strip():
+                    sql = form['txt'][0]
+                elif 'txt64' in form and form['txt64'][0].strip():
+                    sql = base64.b64decode(form['txt64'][0]).decode('utf-8')
+            except Exception:
+                pass
+        else:
+            # 当为 text/plain 或其他类型时，直接将 body 作为 SQL
+            try:
+                sql = body.decode('utf-8')
+            except Exception:
+                sql = None
+        if not sql or not sql.strip():
+            self.send_response(400)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(b'Missing SQL in POST body (txt/txt64 or raw body)')
+            return
+        self._run_sql(sql)
+
+    def _run_sql(self, sql: str):
         cmd = [
             str(BROKERCTL), 'run', sql,
             '--project-id', 'demo',
