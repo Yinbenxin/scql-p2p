@@ -38,8 +38,10 @@ services:
         - -h
         - mysql
       timeout: 20s
-    expose:
-      - "3306"
+    # expose:
+    #   - "3306"
+    ports:
+      - 3326:3306
     restart: always
     volumes:
       - ./bob_init.sql:/docker-entrypoint-initdb.d/bob_init.sql

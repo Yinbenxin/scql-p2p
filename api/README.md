@@ -1,3 +1,21 @@
+# docker 启动
+ cd alice/
+docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
+ cd bob/
+docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
+ cd charlie/
+docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
+
+# 去每个文件夹中产生密钥，并将公钥配置到party_info.json中
+openssl genpkey -algorithm ed25519 -out ed25519key.pem
+openssl pkey -in ed25519key.pem  -pubout -outform DER | base64
+
+# 构建scql工具
+git clone -b 0.9.4b1 https://github.com/secretflow/scql.git
+cd scql
+go build -o brokerctl cmd/brokerctl/main.go
+
+
 # API 使用示例
 
 以下仅展示各接口的请求命令与示例返回。

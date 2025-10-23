@@ -38,8 +38,10 @@ services:
         - -h
         - mysql
       timeout: 20s
-    expose:
-      - "3306"
+    # expose:
+    #   - "3306"
+    ports:
+      - 3336:3306
     restart: always
     volumes:
       - ./charlie_init.sql:/docker-entrypoint-initdb.d/charlie_init.sql

@@ -1,11 +1,4 @@
-# 去每个文件夹中产生密钥，并将公钥配置到party_info.json中
-openssl genpkey -algorithm ed25519 -out ed25519key.pem
-openssl pkey -in ed25519key.pem  -pubout -outform DER | base64
 
-# 构建scql工具
-git clone -b 0.9.4b1 https://github.com/secretflow/scql.git
-cd scql
-go build -o brokerctl cmd/brokerctl/main.go
 
 ./brokerctl create project --project-id "demo" --host http://127.0.0.1:8180
 ./brokerctl get project --host http://127.0.0.1:8180
@@ -62,7 +55,6 @@ go build -o brokerctl cmd/brokerctl/main.go
 ./brokerctl get ccl  --project-id "demo" --parties charlie --host http://127.0.0.1:8180 
 
 
-执行查询
 ./brokerctl run "SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tb.order_amount) as avg_amount FROM ta INNER JOIN tb ON ta.ID = tb.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tb.is_active=1 GROUP BY ta.credit_rank;"  --project-id "demo" --host http://127.0.0.1:8180 --timeout 3
 
 ./brokerctl run "SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tc.order_amounts) as avg_amount FROM ta INNER JOIN tc ON ta.ID = tc.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tc.is_actives=1 GROUP BY ta.credit_rank;"  --project-id "demo" --host http://127.0.0.1:8180 --timeout 5

@@ -5,6 +5,7 @@ import base64
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+import json
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BROKERCTL = REPO_ROOT / "brokerctl"
@@ -189,47 +190,62 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(f'Exception: {e}'.encode('utf-8'))
 
     def handle_logs(self):
-        # 从 alice-broker-1 日志中提取最新的 string_data 片段
-        cmd = ['bash', '-lc', 'docker logs alice-broker-1 | grep "string_data" | tail -n 1']
-        try:
-            res = subprocess.run(
-                cmd,
-                cwd=str(REPO_ROOT),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                timeout=20
-            )
-            output = res.stdout.strip()
-            if res.returncode != 0:
-                self.send_response(500)
-                self.send_header('Content-Type', 'text/plain; charset=utf-8')
-                self.end_headers()
-                err = (
-                    f"Command failed (exit {res.returncode}).\n"
-                    f"STDOUT:\n{output}\n"
-                    f"STDERR:\n{res.stderr.strip()}"
+        # 同时从三台 broker 的日志中提取最新的 string_data 片段
+        brokers = ['alice-broker-1', 'bob-broker-1', 'charlie-broker-1']
+        results = {}
+        for name in brokers:
+            cmd = ['bash', '-lc', f'docker logs {name} | grep "string_data" | tail -n 1']
+            try:
+                res = subprocess.run(
+                    cmd,
+                    cwd=str(REPO_ROOT),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=20
                 )
-                self.wfile.write(err.encode('utf-8'))
-                return
-            # 仅返回 string_data 的数组内容，例如 ["..."]
-            m = re.search(r'"string_data"\s*:\s*(\[[^\]]*\])', output)
-            if not m:
-                self.send_response(404)
-                self.send_header('Content-Type', 'text/plain; charset=utf-8')
-                self.end_headers()
-                self.wfile.write(b'string_data not found')
-                return
-            array_text = m.group(1)
-            self.send_response(200)
+                output = res.stdout.strip()
+                if res.returncode != 0:
+                    results[name] = {
+                        'error': f'Command exit {res.returncode}',
+                        'stdout': output,
+                        'stderr': res.stderr.strip()
+                    }
+                    continue
+                # 提取 string_data 的数组内容，例如 ["..."]
+                m = re.search(r'"string_data"\s*:\s*(\[[^\]]*\])', output)
+                if not m:
+                    results[name] = {'error': 'string_data not found'}
+                    continue
+                array_text = m.group(1)
+                # 尝试解析为 JSON 数组；若失败则按原文本返回
+                try:
+                    array = json.loads(array_text)
+                except Exception:
+                    array = array_text
+                results[name] = {'string_data': array}
+            except Exception as e:
+                results[name] = {'error': f'Exception: {e}'}
+        # 返回为数组的数组：每台 broker 的结果保留为一个独立数组（不含名称）
+        list_of_arrays = []
+        for name in ['alice-broker-1', 'bob-broker-1', 'charlie-broker-1']:
+            data = results.get(name)
+            if isinstance(data, dict) and 'string_data' in data:
+                val = data['string_data']
+                if isinstance(val, list):
+                    list_of_arrays.append(val)
+                else:
+                    list_of_arrays.append([val])
+        if not list_of_arrays:
+            self.send_response(404)
             self.send_header('Content-Type', 'text/plain; charset=utf-8')
             self.end_headers()
-            self.wfile.write(array_text.encode('utf-8'))
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'text/plain; charset=utf-8')
-            self.end_headers()
-            self.wfile.write(f'Exception: {e}'.encode('utf-8'))
+            self.wfile.write(b'string_data not found')
+            return
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.end_headers()
+        self.wfile.write(json.dumps(list_of_arrays, ensure_ascii=False).encode('utf-8'))
 
 
 def main():
