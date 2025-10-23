@@ -3,8 +3,8 @@
 ./brokerctl create project --project-id "demo2" --host http://127.0.0.1:8180
 ./brokerctl invite bob --project-id "demo2" --host http://127.0.0.1:8180
 ./brokerctl invite charlie --project-id "demo2" --host http://127.0.0.1:8180
-./brokerctl process invitation 5 --response "accept" --project-id "demo2" --host http://127.0.0.1:8280
-./brokerctl process invitation 5 --response "accept" --project-id "demo2" --host http://127.0.0.1:8380
+./brokerctl process invitation 2 --response "accept" --project-id "demo2" --host http://127.0.0.1:8280
+./brokerctl process invitation 2 --response "accept" --project-id "demo2" --host http://127.0.0.1:8380
 
 
 
