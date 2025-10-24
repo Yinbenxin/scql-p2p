@@ -6,12 +6,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import json
+from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BROKERCTL = REPO_ROOT / "brokerctl"
 
 # 提取表格块的辅助函数
-def extract_table(text: str, marker: str | None = None) -> str:
+def extract_table(text: str, marker: Optional[str] = None) -> str:
     lines = text.splitlines()
     start_idx = 0
     if marker:
