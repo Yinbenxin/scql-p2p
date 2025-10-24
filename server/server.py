@@ -8,6 +8,12 @@ from urllib.parse import urlparse, parse_qs
 import json
 from typing import Optional
 import os
+import logging
+
+# 配置日志记录, 保存到server.log文件
+logging.basicConfig(filename='server.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BROKERCTL = REPO_ROOT / "brokerctl"
 
