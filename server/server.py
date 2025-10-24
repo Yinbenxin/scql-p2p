@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import json
 from typing import Optional
-
+import os
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BROKERCTL = REPO_ROOT / "brokerctl"
 
