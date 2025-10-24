@@ -2,6 +2,7 @@ version: '3.8'
 services:
   broker:
     image: 10.12.0.78:5000/llm/secretflow/scql:0.9.4b1
+    privileged: true
     command:
       - /home/admin/bin/broker
       - -config=/home/admin/configs/config.yml
@@ -20,6 +21,7 @@ services:
       - /home/admin/bin/scqlengine
       - --flagfile=/home/admin/engine/conf/gflags.conf
     image: 10.12.0.78:5000/llm/secretflow/scql:0.9.4b1
+    privileged: true
     ports:
       - 8203:8003
     volumes:
