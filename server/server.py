@@ -11,6 +11,12 @@ from typing import Optional
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BROKERCTL = REPO_ROOT / "brokerctl"
 
+# 默认配置支持通过环境变量覆盖
+DEFAULT_PROJECT = os.getenv('PROJECT_ID', 'demo2')
+DEFAULT_HOST = os.getenv('BROKER_HOST', 'http://127.0.0.1:8180')
+DEFAULT_PARTIES = os.getenv('PARTIES', 'alice')
+DEFAULT_TIMEOUT = os.getenv('TIMEOUT', '5')
+
 # 提取表格块的辅助函数
 def extract_table(text: str, marker: Optional[str] = None) -> str:
     lines = text.splitlines()
@@ -68,11 +74,16 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b'Not Found')
 
     def handle_get_ccl(self):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        project = qs.get('project', [DEFAULT_PROJECT])[0]
+        parties = qs.get('parties', [DEFAULT_PARTIES])[0]
+        host = qs.get('host', [DEFAULT_HOST])[0]
         cmd = [
             str(BROKERCTL), 'get', 'ccl',
-            '--project-id', 'demo2',
-            '--parties', 'alice',
-            '--host', 'http://127.0.0.1:8180'
+            '--project-id', project,
+            '--parties', parties,
+            '--host', host
         ]
         try:
             res = subprocess.run(
@@ -117,9 +128,17 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b'Missing query param: txt')
             return
         sql = txt_list[0]
-        self._run_sql(sql)
+        project = qs.get('project', [DEFAULT_PROJECT])[0]
+        host = qs.get('host', [DEFAULT_HOST])[0]
+        timeout = qs.get('timeout', [DEFAULT_TIMEOUT])[0]
+        self._run_sql(sql, project=project, host=host, timeout=timeout)
 
     def handle_run_post(self):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        project = qs.get('project', [DEFAULT_PROJECT])[0]
+        host = qs.get('host', [DEFAULT_HOST])[0]
+        timeout = qs.get('timeout', [DEFAULT_TIMEOUT])[0]
         # 支持两种POST：
         # 1) text/plain 原始 SQL 在请求体
         # 2) application/x-www-form-urlencoded，键为 txt 或 txt64
@@ -148,14 +167,17 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'Missing SQL in POST body (txt/txt64 or raw body)')
             return
-        self._run_sql(sql)
+        self._run_sql(sql, project=project, host=host, timeout=timeout)
 
-    def _run_sql(self, sql: str):
+    def _run_sql(self, sql: str, project: Optional[str] = None, host: Optional[str] = None, timeout: Optional[str] = None):
+        project = project or DEFAULT_PROJECT
+        host = host or DEFAULT_HOST
+        timeout = timeout or DEFAULT_TIMEOUT
         cmd = [
             str(BROKERCTL), 'run', sql,
-            '--project-id', 'demo2',
-            '--host', 'http://127.0.0.1:8180',
-            '--timeout', '5'
+            '--project-id', project,
+            '--host', host,
+            '--timeout', str(timeout)
         ]
         try:
             res = subprocess.run(
