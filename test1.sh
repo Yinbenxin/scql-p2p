@@ -36,10 +36,21 @@
 ./brokerctl grant alice PLAINTEXT --project-id "demo2" --table-name tb --column-name 付款单位 --host http://127.0.0.1:8280
 ./brokerctl grant alice PLAINTEXT --project-id "demo2" --table-name tb --column-name 收款单位 --host http://127.0.0.1:8280
 
+./brokerctl grant charlie PLAINTEXT_AFTER_AGGREGATE --project-id "demo2" --table-name tb --column-name 金额 --host http://127.0.0.1:8280
+./brokerctl grant charlie PLAINTEXT_AFTER_COMPARE --project-id "demo2" --table-name tb --column-name 类型 --host http://127.0.0.1:8280
+./brokerctl grant charlie PLAINTEXT --project-id "demo2" --table-name tb --column-name 付款单位 --host http://127.0.0.1:8280
+./brokerctl grant charlie PLAINTEXT --project-id "demo2" --table-name tb --column-name 收款单位 --host http://127.0.0.1:8280
+
+
 ./brokerctl grant alice PLAINTEXT_AFTER_AGGREGATE --project-id "demo2" --table-name tc --column-name 金额 --host http://127.0.0.1:8380
 ./brokerctl grant alice PLAINTEXT_AFTER_COMPARE --project-id "demo2" --table-name tc --column-name 类型 --host http://127.0.0.1:8380
 ./brokerctl grant alice PLAINTEXT --project-id "demo2" --table-name tc --column-name 付款单位 --host http://127.0.0.1:8380
 ./brokerctl grant alice PLAINTEXT --project-id "demo2" --table-name tc --column-name 收款单位 --host http://127.0.0.1:8380
+./brokerctl grant bob PLAINTEXT_AFTER_AGGREGATE --project-id "demo2" --table-name tc --column-name 金额 --host http://127.0.0.1:8380
+./brokerctl grant bob PLAINTEXT_AFTER_COMPARE --project-id "demo2" --table-name tc --column-name 类型 --host http://127.0.0.1:8380
+./brokerctl grant bob PLAINTEXT --project-id "demo2" --table-name tc --column-name 付款单位 --host http://127.0.0.1:8380
+./brokerctl grant bob PLAINTEXT --project-id "demo2" --table-name tc --column-name 收款单位 --host http://127.0.0.1:8380
+
 
 ./brokerctl get ccl  --project-id "demo2" --parties alice --host http://127.0.0.1:8180
 

@@ -70,7 +70,7 @@ class Handler(BaseHTTPRequestHandler):
     def handle_get_ccl(self):
         cmd = [
             str(BROKERCTL), 'get', 'ccl',
-            '--project-id', 'demo',
+            '--project-id', 'demo2',
             '--parties', 'alice',
             '--host', 'http://127.0.0.1:8180'
         ]
@@ -153,7 +153,7 @@ class Handler(BaseHTTPRequestHandler):
     def _run_sql(self, sql: str):
         cmd = [
             str(BROKERCTL), 'run', sql,
-            '--project-id', 'demo',
+            '--project-id', 'demo2',
             '--host', 'http://127.0.0.1:8180',
             '--timeout', '5'
         ]
