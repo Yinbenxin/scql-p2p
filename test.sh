@@ -40,6 +40,7 @@
 ./brokerctl grant alice PLAINTEXT_AFTER_AGGREGATE --project-id "demo" --table-name tc --column-name order_amounts --host http://127.0.0.1:8380
 
 ./brokerctl get ccl  --project-id "demo" --parties alice --host http://127.0.0.1:8180
+./brokerctl get ccl  --project-id "demo" --parties alice --host http://127.0.0.1:8180
 ./brokerctl get ccl  --project-id "demo" --parties bob --host http://127.0.0.1:8180
 ./brokerctl get ccl  --project-id "demo" --parties charlie --host http://127.0.0.1:8180 
 

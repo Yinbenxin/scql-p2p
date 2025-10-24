@@ -85,6 +85,8 @@ class Handler(BaseHTTPRequestHandler):
             '--parties', parties,
             '--host', host
         ]
+        logger.info(f"Running command: {' '.join(cmd)}")
+
         try:
             res = subprocess.run(
                 cmd,
@@ -179,6 +181,7 @@ class Handler(BaseHTTPRequestHandler):
             '--host', host,
             '--timeout', str(timeout)
         ]
+        logger.info(f"Running command: {' '.join(cmd)}")
         try:
             res = subprocess.run(
                 cmd,
@@ -218,6 +221,7 @@ class Handler(BaseHTTPRequestHandler):
         results = {}
         for name in brokers:
             cmd = ['bash', '-lc', f'docker logs {name} | grep "string_data" | tail -n 1']
+            logger.info(f"Running command: {' '.join(cmd)}")
             try:
                 res = subprocess.run(
                     cmd,
