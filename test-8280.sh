@@ -7,7 +7,7 @@ set -euo pipefail
 ./brokerctl create table tb --project-id "demo" --columns "ID string, order_amount double, is_active int" --ref-table bob.user_stats --db-type mysql --host http://127.0.0.1:8280
 ./brokerctl get table tb --host http://127.0.0.1:8280 --project-id "demo"
 
-./brokerctl grant bob PLAINTEXT --project-id "demo" --table-name tb --column-name ID --host http://127.0.0.1:8280
+./brokerctl grant alice PLAINTEXT --project-id "demo" --table-name tb --column-name ID --host http://127.0.0.1:8280
 ./brokerctl grant bob PLAINTEXT --project-id "demo" --table-name tb --column-name order_amount --host http://127.0.0.1:8280
 ./brokerctl grant bob PLAINTEXT --project-id "demo" --table-name tb --column-name is_active --host http://127.0.0.1:8280
 

@@ -15,7 +15,7 @@ engine:
   protocol: http
   content_type: application/json
   uris:
-    - for_peer: 10.130.66.55:8303
+    - for_peer: 10.130.66.69:8303
       for_self: engine:8003
 storage:
   type: mysql

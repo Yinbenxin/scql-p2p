@@ -2,17 +2,17 @@
   "participants": [
     {
       "party_code": "alice",
-      "endpoint": "http://10.130.66.24:8181",
+      "endpoint": "http://10.130.66.71:8181",
       "pubkey": "MCowBQYDK2VwAyEAVhUJVNOChKu01SU1eTIlrWd0pBmm6WmZhuxySPJ+u7E="
     },
     {
       "party_code": "bob",
-      "endpoint": "http://10.130.66.43:8281",
+      "endpoint": "http://10.130.66.64:8281",
       "pubkey": "MCowBQYDK2VwAyEA8ltuEnvM3aZ/ANp8GwNallw+PIqE0C4wI70ZyRugF0Q="
     },
     {
       "party_code": "charlie",
-      "endpoint": "http://10.130.66.55:8381",
+      "endpoint": "http://10.130.66.69:8381",
       "pubkey": "MCowBQYDK2VwAyEABbP9clrmD7GGssXJxat1PsLE3x9e+5VWKctogeOfhjk="
     }
   ]

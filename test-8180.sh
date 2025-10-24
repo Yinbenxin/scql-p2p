@@ -31,3 +31,6 @@ set -euo pipefail
 
 ./brokerctl run "SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tb.order_amount) as avg_amount FROM ta INNER JOIN tb ON ta.ID = tb.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tb.is_active=1 GROUP BY ta.credit_rank;"  --project-id "demo" --host http://127.0.0.1:8180 --timeout 3
 ./brokerctl run "SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tc.order_amounts) as avg_amount FROM ta INNER JOIN tc ON ta.ID = tc.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tc.is_actives=1 GROUP BY ta.credit_rank;"  --project-id "demo" --host http://127.0.0.1:8180 --timeout 5
+
+
+./brokerctl run "SELECT credit_rank FROM ta;" --project-id "demo" --host http://127.0.0.1:8180 --timeout 3
