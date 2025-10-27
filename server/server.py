@@ -21,7 +21,7 @@ BROKERCTL = REPO_ROOT / "brokerctl"
 DEFAULT_PROJECT = os.getenv('PROJECT_ID', 'demo2')
 DEFAULT_HOST = os.getenv('BROKER_HOST', 'http://127.0.0.1:8180')
 DEFAULT_PARTIES = os.getenv('PARTIES', 'alice')
-DEFAULT_TIMEOUT = os.getenv('TIMEOUT', '5')
+DEFAULT_TIMEOUT = os.getenv('TIMEOUT', '30')
 
 # 提取表格块的辅助函数
 def extract_table(text: str, marker: Optional[str] = None) -> str:

@@ -1,3 +1,6 @@
+# 后台启动
+nohup python server/server.py &
+
 # docker 启动
  cd alice/
 docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
@@ -5,6 +8,7 @@ docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.
 docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
  cd charlie/
 docker compose -f docker-compose.yaml down &&  docker compose -f docker-compose.yaml up -d
+
 
 # 去每个文件夹中产生密钥，并将公钥配置到party_info.json中
 openssl genpkey -algorithm ed25519 -out ed25519key.pem
@@ -44,7 +48,7 @@ go build -o brokerctl cmd/brokerctl/main.go
 ## POST /run
 - 请求命令:
     - `curl -sS -X POST 'http://localhost:8111/run' -H 'Content-Type: text/plain' --data $'SELECT ta.credit_rank, COUNT(*) as cnt, AVG(ta.income) as avg_income, AVG(tc.order_amounts) as avg_amount FROM ta INNER JOIN tc ON ta.ID = tc.ID WHERE ta.age >= 20 AND ta.age <= 30 AND tc.is_actives=1 GROUP BY ta.credit_rank;'`
-    - `curl -sS -X POST 'http://localhost:8111/run' -H 'Content-Type: text/plain' --data $'SELECT s.company, s.总打款, s.总收入 FROM (SELECT tc.company, tc.总打款 + tb.总打款 AS 总打款, tc.总收入 + tb.总收入 AS 总收入 FROM (SELECT p.company, p.总打款, r.总收入 FROM (SELECT 付款单位 AS company, SUM(金额) AS 总打款 FROM tc WHERE 类型='打款' GROUP BY 付款单位) p JOIN (SELECT 收款单位 AS company, SUM(金额) AS 总收入 FROM tc WHERE 类型='收款' GROUP BY 收款单位) r ON p.company = r.company) tc JOIN (SELECT p.company, p.总打款, r.总收入 FROM (SELECT 付款单位 AS company, SUM(金额) AS 总打款 FROM tb WHERE 类型='打款' GROUP BY 付款单位) p JOIN (SELECT 收款单位 AS company, SUM(金额) AS 总收入 FROM tb WHERE 类型='收款' GROUP BY 收款单位) r ON p.company = r.company) tb ON tc.company = tb.company) s JOIN ta ON ta.企业名称 = s.company;'`
+    - `curl -sS -X POST 'http://10.130.66.71:8111/run' -H 'Content-Type: text/plain' --data $'SELECT s.company, s.总打款, s.总收入 FROM (SELECT tc.company, tc.总打款 + tb.总打款 AS 总打款, tc.总收入 + tb.总收入 AS 总收入 FROM (SELECT p.company, p.总打款, r.总收入 FROM (SELECT 付款单位 AS company, SUM(金额) AS 总打款 FROM tc WHERE 类型=\'打款\' GROUP BY 付款单位) p JOIN (SELECT 收款单位 AS company, SUM(金额) AS 总收入 FROM tc WHERE 类型=\'收款\' GROUP BY 收款单位) r ON p.company = r.company) tc JOIN (SELECT p.company, p.总打款, r.总收入 FROM (SELECT 付款单位 AS company, SUM(金额) AS 总打款 FROM tb WHERE 类型=\'打款\' GROUP BY 付款单位) p JOIN (SELECT 收款单位 AS company, SUM(金额) AS 总收入 FROM tb WHERE 类型=\'收款\' GROUP BY 收款单位) r ON p.company = r.company) tb ON tc.company = tb.company) s JOIN ta ON ta.企业名称 = s.company;'`
 - 示例返回:
 ```
 +-------------+-----+------------+------------+
