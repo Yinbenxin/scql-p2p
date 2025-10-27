@@ -1,5 +1,5 @@
 # 后台启动
-nohup python server/server.py &
+nohup python3 server.py &
 
 # docker 启动
  cd alice/

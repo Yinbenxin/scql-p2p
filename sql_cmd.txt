@@ -1,0 +1,5 @@
+# 最大供应商
+SELECT 付款单位 AS 公司名称, 收款单位 AS 最大供应商, CAST(金额合计 AS CHAR) AS 金额合计 FROM (SELECT 付款单位, 收款单位, SUM(金额) AS 金额合计, ROW_NUMBER() OVER (PARTITION BY 付款单位 ORDER BY SUM(金额) DESC) AS rn FROM (SELECT 付款单位, 收款单位, 金额 FROM tc  INNER JOIN ta ON tc.付款单位 = ta.企业名称  UNION ALL SELECT 付款单位, 收款单位, 金额 FROM tb INNER JOIN ta ON tb.付款单位 = ta.企业名称) AS 合并 GROUP BY 付款单位, 收款单位) t WHERE t.rn = 1 ORDER BY 金额合计 DESC;
+
+# 最大客户
+SELECT 收款单位 AS 公司名称, 付款单位 AS 最大客户, CAST(金额合计 AS CHAR) AS 金额合计 FROM (SELECT 收款单位, 付款单位, SUM(金额) AS 金额合计, ROW_NUMBER() OVER (PARTITION BY 收款单位 ORDER BY SUM(金额) DESC) AS rn FROM (SELECT 收款单位, 付款单位, 金额 FROM tc INNER JOIN ta ON tc.收款单位 = ta.企业名称 UNION ALL SELECT 收款单位, 付款单位, 金额 FROM tb INNER JOIN ta ON tb.收款单位 = ta.企业名称) AS 合并 GROUP BY 收款单位, 付款单位) t WHERE t.rn = 1 ORDER BY 收款单位 ASC;
